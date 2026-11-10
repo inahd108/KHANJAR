@@ -1,0 +1,20 @@
+const { chromium } = require('playwright');
+(async () => {
+  const browser = await chromium.launch({ args: ['--use-angle=swiftshader', '--use-gl=angle', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist', '--autoplay-policy=no-user-gesture-required'] });
+  const page = await browser.newPage({ viewport: { width: 640, height: 360 } });
+  const errors = [];
+  page.on('console', (m) => { if (m.type() === 'error' || m.type() === 'warning') errors.push('[' + m.type() + '] ' + m.text().slice(0, 300)); });
+  page.on('pageerror', (e) => errors.push('[pageerror] ' + e.message));
+  page.on('requestfailed', (r) => errors.push('[requestfailed] ' + r.url()));
+  await page.goto('http://127.0.0.1:4173/?q=low');
+  await page.waitForFunction('window.__ready === true || !!window.__error', null, { timeout: 300000 });
+  const menu = await page.evaluate(() => ({ menuVisible: !document.querySelector('.screen.menu').classList.contains('hidden'), state: game.state }));
+  await page.click('button[data-act="start"]');
+  await page.waitForTimeout(6000);
+  const a = await page.evaluate(() => ({ state: game.state, time: +game.time.toFixed(2), audioReady: game.audio.ready, locked: game.input.locked, hud: !document.querySelector('.hud').classList.contains('hidden'), player: game.player.state }));
+  await page.keyboard.down('KeyW'); await page.waitForTimeout(5000); await page.keyboard.up('KeyW');
+  const b = await page.evaluate(() => ({ state: game.state, time: +game.time.toFixed(2), player: game.player.state, pos: game.player.pos.toArray().map((v) => +v.toFixed(1)), hp: Math.round(game.player.health) }));
+  console.log(JSON.stringify({ menu, a, b }));
+  console.log(errors.filter((e) => !/GPU stall|GL Driver/.test(e)).slice(0, 12).join('\n') || 'no errors or warnings');
+  await browser.close();
+})().catch((e) => { console.error(e); process.exit(1); });

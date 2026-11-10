@@ -121,7 +121,7 @@ export class Hud {
       const ang = Math.atan2(obj.x - p.pos.x, -(obj.z - p.pos.z));
       let d = ang - heading; d = ((d + Math.PI) % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2) - Math.PI;
       const x = Math.max(-W / 2 + 6, Math.min(W / 2 - 6, d / (Math.PI * 0.6) * (W / 2)));
-      mark.style.transform = `translateX(${x.toFixed(1)}px)`; mark.style.opacity = 1;
+      mark.style.transform = `translateX(${x.toFixed(1)}px) rotate(45deg)`; mark.style.opacity = 1;
       this.$('.obj-dist').textContent = Math.round(Math.hypot(obj.x - p.pos.x, obj.z - p.pos.z)) + ' m';
     } else { mark.style.opacity = 0; this.$('.obj-dist').textContent = ''; }
     // world markers: awareness diamonds over guards, objective beacon
@@ -139,7 +139,7 @@ export class Hud {
       let m = this.markerPool[used];
       if (!m) { m = el('div', 'marker'); m.appendChild(el('div', 'm-fill')); m.appendChild(el('div', 'm-label')); layer.appendChild(m); this.markerPool.push(m); }
       used++;
-      m.className = 'marker ' + cls; m.style.display = 'block'; m.style.transform = `translate(${sx.toFixed(1)}px, ${sy.toFixed(1)}px)`;
+      m.className = 'marker ' + cls; m.style.display = 'block'; m.style.transform = `translate(${sx.toFixed(1)}px, ${sy.toFixed(1)}px) rotate(45deg)`;
       m.firstChild.style.height = Math.round(fill * 100) + '%'; m.lastChild.textContent = label;
     };
     if (g.state === 'play') {

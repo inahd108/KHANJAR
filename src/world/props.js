@@ -27,7 +27,7 @@ export async function loadProps(names, onProgress = () => {}) {
   return propModels;
 }
 
-const CELL = 44;
+const CELL = 72;
 /**
  * Build instanced meshes for a prop list, chunked on a grid so they can be frustum / distance culled.
  * Returns { group, boxes, update(cameraPosition) } where boxes are collision AABBs.

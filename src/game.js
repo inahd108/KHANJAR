@@ -35,6 +35,7 @@ export class Game {
     this.combat = { playerStrike: (p, o) => this.playerStrike(p, o) };
     this.combatTimer = 0; this.huntedTimer = 0; this.detectedOnce = false; this.missionTime = 0;
     this.hintsShown = new Set();
+    this.timers = [];
     this.placeStart();
     this.spawnActors();
     this.input.onLockChange = (locked) => { if (!locked && this.state === 'play') this.pauseGame(); };
@@ -130,13 +131,16 @@ export class Game {
     // --- townsfolk
     const civNodes = this.nav.nodes.filter((n) => !n.restricted && Math.abs(n.x) < 140 && Math.abs(n.z) < 140);
     let cv = 0;
-    for (let i = 0; i < 34; i++) {
-      const n = civNodes[Math.floor(Math.random() * civNodes.length)];
+    // the souk and the plaza draw the biggest crowds
+    const busy = civNodes.filter((n) => Math.abs(n.z - 6) < 2 && n.x > -90 && n.x < 75);
+    for (let i = 0; i < 46; i++) {
+      const pool = i < 20 && busy.length ? busy : civNodes;
+      const n = pool[Math.floor(Math.random() * pool.length)];
       const civ = npcs.add('civilian', n.x + rand(-1.5, 1.5), 0, n.z + rand(-1.5, 1.5), { variant: cv++, navNode: n.id, yaw: rand(0, 6) });
       civ.carry = Math.random() < 0.15;
     }
     // stall keepers
-    for (const s of (pts.stalls || []).filter((_, i) => i % 3 === 0).slice(0, 8)) {
+    for (const s of (pts.stalls || []).filter((_, i) => i % 2 === 0).slice(0, 12)) {
       const civ = npcs.add('civilian', s.x, 0, s.z + s.side * 0.95, { variant: cv++, yaw: s.side === 1 ? Math.PI : 0 });
       civ.activity = { anim: Math.random() < 0.5 ? 'Idle_Talking_Loop' : 'Idle_Loop', t: 1, forever: true, face: { x: s.x, z: s.z - s.side * 3 } };
     }
@@ -180,7 +184,7 @@ export class Game {
     this.setPhase('find');
     this.hud.banner('Jerusalem · 1187', 'The Castellan\'s Due');
     this.audio.play('objective');
-    setTimeout(() => { if (this.player.state === 'perch') this.hud.hint('Move to leave your perch — leap onto the <b>canopy</b> below, or climb down the tower', 9); }, 5200);
+    this.after(5.2, () => { if (this.player.state === 'perch') this.hud.hint('Move to leave your perch — leap onto the <b>canopy</b> below, or climb down the tower', 9); });
   }
 
   setPhase(phase) {
@@ -203,7 +207,7 @@ export class Game {
   hint(id, text, time) { if (this.hintsShown.has(id)) return; this.hintsShown.add(id); this.hud.hint(text, time); }
 
   onPlayerHurt(a) { this.hud.hurtFlash(Math.min(0.8, a / 40)); this.gfx.grade.uniforms.get('uPulse').value = Math.min(1, a / 30); }
-  onPlayerDeath() { this.state = 'dying'; setTimeout(() => { this.state = 'dead'; this.hud.show('death'); this.input.unlock(); this.audio.play('fail'); }, 2300); }
+  onPlayerDeath() { this.state = 'dying'; this.after(2.3, () => { this.state = 'dead'; this.hud.show('death'); this.input.unlock(); this.audio.play('fail'); }); }
   retry() {
     // back to the perch; the garrison calms down, the dead stay dead
     const s = this.spawnPoint;
@@ -216,13 +220,15 @@ export class Game {
   onGuardAlerted(n) { this.detectedOnce = true; this.hint('fight', '<b>Left mouse</b> to strike &middot; hold <b>Right mouse</b> to block — block just before a blow to parry, then <b>F</b>', 8); }
   onBodyFound() { this.hud.hint('A body has been found', 3); }
   onKill(npc, type) {
-    if (npc.isTarget && this.phase === 'find') { setTimeout(() => this.setPhase('escape'), 1400); }
+    if (npc.isTarget && this.phase === 'find') this.after(1.4, () => this.setPhase('escape'));
   }
 
   combatNearby() { return this.combatTimer > 0; }
   get hunted() { return this.huntedTimer > 0; }
   get alertState() { return this.npcs.anyCombat ? 'hunted' : (this.npcs.anySearch ? 'search' : 'calm'); }
 
+  /** run fn after `sec` seconds of game time (so it pauses and slows with the game) */
+  after(sec, fn) { this.timers.push({ t: sec, fn }); }
   hitStop(sec) { this.hitStopT = Math.max(this.hitStopT, sec); }
   slowMo(scale, sec) { this.slowScale = scale; this.slowT = sec; }
 
@@ -258,6 +264,7 @@ export class Game {
       this.cam.update(dt, p, null);
     } else if (this.state === 'play' || this.state === 'dying') {
       this.time += dt; this.missionTime += dt;
+      for (let i = this.timers.length - 1; i >= 0; i--) { const tm = this.timers[i]; tm.t -= dt; if (tm.t <= 0) { this.timers.splice(i, 1); tm.fn(); } }
       p.update(dt);
       this.npcs.update(dt);
       const combat = this.npcs.anyCombat;

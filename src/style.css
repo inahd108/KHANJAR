@@ -52,7 +52,7 @@ h2 { font-weight: 400; font-size: 44px; letter-spacing: 0.08em; margin: 8px 0 22
 .compass-strip span { position: absolute; left: 50%; top: 4px; width: 40px; margin-left: -20px; text-align: center; font-size: 15px; letter-spacing: 0.1em; }
 .compass-strip span.minor { font-size: 10px; opacity: 0.6; top: 8px; }
 .compass-needle { position: absolute; left: 50%; bottom: 0; width: 1px; height: 8px; background: var(--paper); }
-.compass-mark { position: absolute; left: 50%; bottom: 1px; width: 9px; height: 9px; margin-left: -4.5px; background: var(--gold); transform-origin: center; rotate: 45deg; box-shadow: 0 0 8px var(--gold); }
+.compass-mark { position: absolute; left: 50%; bottom: 1px; width: 9px; height: 9px; margin-left: -4.5px; background: var(--gold); transform-origin: center; box-shadow: 0 0 8px var(--gold); }
 .status { position: absolute; top: 64px; left: 50%; transform: translateX(-50%); text-align: center; --aw: 0; }
 .status .eye { width: 44px; margin: 0 auto; opacity: calc(0.45 + var(--aw) * 0.55); }
 .status .lid { fill: none; stroke: var(--paper); stroke-width: 2.5; }
@@ -62,7 +62,7 @@ h2 { font-weight: 400; font-size: 44px; letter-spacing: 0.08em; margin: 8px 0 22
 .status[data-state='hunted'] .lid { stroke: var(--red); }
 .status[data-state='hunted'] .iris { fill: var(--red); transform: scale(1.1); }
 .status[data-state='hunted'] .eye { opacity: 1; animation: pulse 0.7s infinite alternate; }
-@keyframes pulse { from { transform: scale(1); } to { transform: scale(1.14); } }
+@keyframes pulse { from { scale: 1; } to { scale: 1.14; } }
 .status-text { font-size: 11px; letter-spacing: 0.3em; text-transform: uppercase; opacity: 0.8; margin-top: 2px; }
 .status[data-state='hunted'] .status-text { color: #ff8b78; opacity: 1; }
 .health { position: absolute; left: 34px; bottom: 34px; }
@@ -72,15 +72,7 @@ h2 { font-weight: 400; font-size: 44px; letter-spacing: 0.08em; margin: 8px 0 22
 .health.low .pip-fill { background: linear-gradient(180deg, #ff8b78, #c8402f); }
 .prompt { position: absolute; left: 50%; bottom: 21%; transform: translateX(-50%); display: flex; align-items: center; gap: 12px; font-size: 17px; letter-spacing: 0.16em; text-transform: uppercase; animation: rise 0.18s ease-out; }
 @keyframes rise { from { opacity: 0; transform: translate(-50%, 8px); } to { opacity: 1; transform: translate(-50%, 0); } }
-.key { display: inline-grid; place-items: center; width: 34px; height: 34px; border: 1.5px solid var(--gold); color: var(--gold); background: rgba(12, 10, 8, 0.6); font-size: 16px; letter-spacing: 0; rotate: 45deg; }
-.key::first-letter { }
-.prompt .key { font-family: inherit; }
-.prompt .key { text-indent: 0; }
-.prompt .key { position: relative; }
-.prompt .key { writing-mode: horizontal-tb; }
-.prompt .key { transform: none; }
-.prompt .key { line-height: 1; }
-.prompt .key { rotate: 0deg; border-radius: 3px; }
+.key { display: inline-grid; place-items: center; width: 34px; height: 34px; border: 1.5px solid var(--gold); border-radius: 3px; color: var(--gold); background: rgba(12, 10, 8, 0.6); font-size: 16px; letter-spacing: 0; line-height: 1; }
 .hint { position: absolute; left: 50%; bottom: 11%; transform: translateX(-50%); font-size: 15px; font-style: italic; opacity: 0.92; background: rgba(10, 8, 6, 0.45); padding: 8px 20px; border-top: 1px solid rgba(217, 179, 106, 0.5); border-bottom: 1px solid rgba(217, 179, 106, 0.5); white-space: nowrap; }
 .hint b { color: var(--gold); font-style: normal; font-weight: 400; letter-spacing: 0.06em; }
 .banner { position: absolute; left: 0; right: 0; top: 30%; text-align: center; }
@@ -91,7 +83,7 @@ h2 { font-weight: 400; font-size: 44px; letter-spacing: 0.08em; margin: 8px 0 22
 .vignette-hurt { position: absolute; inset: 0; opacity: 0; background: radial-gradient(ellipse at center, transparent 45%, rgba(170, 20, 10, 0.55) 100%); }
 .reticle { display: none; }
 .markers { position: absolute; inset: 0; overflow: hidden; }
-.marker { position: absolute; left: -7px; top: -7px; width: 13px; height: 13px; rotate: 45deg; border: 1.5px solid rgba(239, 230, 210, 0.9); background: rgba(10, 8, 6, 0.5); overflow: visible; }
+.marker { position: absolute; left: -7px; top: -7px; width: 13px; height: 13px; border: 1.5px solid rgba(239, 230, 210, 0.9); background: rgba(10, 8, 6, 0.5); overflow: visible; }
 .marker .m-fill { position: absolute; left: 0; right: 0; bottom: 0; background: var(--amber); }
 .marker.search .m-fill { background: var(--amber); }
 .marker.hot { border-color: #ffb3a6; }
@@ -103,4 +95,4 @@ h2 { font-weight: 400; font-size: 44px; letter-spacing: 0.08em; margin: 8px 0 22
 .marker.target.hot .m-fill { background: var(--red); }
 .marker.beacon { border-color: var(--gold); box-shadow: 0 0 14px var(--gold); animation: pulse 0.9s infinite alternate; }
 .marker.beacon .m-fill { background: rgba(217, 179, 106, 0.6); }
-.m-label { position: absolute; left: 22px; top: -2px; rotate: -45deg; transform-origin: left center; white-space: nowrap; font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold); text-shadow: 0 1px 4px #000; }
+.m-label { position: absolute; left: 20px; top: 12px; transform: rotate(-45deg); transform-origin: left center; white-space: nowrap; font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold); text-shadow: 0 1px 4px #000; }

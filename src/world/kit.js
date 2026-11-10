@@ -126,7 +126,7 @@ export function createContext(materials, seed) {
     const { w = 3, d = 2.2, drop = 0.7, color = rng.pick(CLOTH_COLORS), color2 = CREAM, poles = true, groundY = 0, y = 2.7 } = o;
     ctx.put('fabric', G.cloth(Math.max(2, Math.round(w / 0.45)), 0.1, 1), sub(base, 0, 0, 0.02, w, drop, d), { color, color2, uvScale: 0.6 });
     // valance
-    ctx.put('fabric', G.plane(), sub(base, 0, -drop - 0.13, d + 0.02, w, 0.26, 1), { color: color2, uvScale: 0.6 });
+    ctx.put('fabric', G.cloth(Math.max(2, Math.round(w / 0.45)), 0.0, 0), sub(base, 0, -drop, d + 0.02, w, 1, 0.2, 0, Math.PI / 2), { color, color2, uvScale: 0.6 });
     ctx.put('woodDark', G.box(), sub(base, 0, 0.0, 0.05, w + 0.1, 0.07, 0.07));
     ctx.put('woodDark', G.box(), sub(base, 0, -drop, d, w + 0.1, 0.06, 0.06));
     if (poles) for (const sx of [-1, 1]) ctx.put('woodDark', G.cyl(6), sub(base, sx * (w / 2 - 0.05), -(y - groundY), d - 0.02, 0.045, y - groundY - drop, 0.045));

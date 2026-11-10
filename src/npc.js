@@ -141,7 +141,8 @@ export class Npc {
       if (sees) {
         const prof = g.hunted ? 2 : p.profile;
         const near = clamp(1.6 - dist / VIEW_DIST * 1.4, 0.25, 1.6);
-        if (prof === 2) rate = 1.9 * near; else if (prof === 1) rate = 0.42 * near; else if (dist < 1.3 && this.restricted) rate = 0.5;
+        if (prof === 2) rate = 0.95 * near; else if (prof === 1) rate = 0.3 * near; else if (dist < 1.3 && this.restricted) rate = 0.5;
+        if (p.crouching) rate *= 0.55;
         if (g.hunted) rate = Math.max(rate, 3);
       }
       if (rate > 0) this.awareness = Math.min(1, this.awareness + rate * dt); else this.awareness = Math.max(0, this.awareness - 0.22 * dt);
@@ -277,7 +278,7 @@ export class Npc {
     this.attack = null; this.mgr.releaseToken(this);
     this.setState('stunned'); this.stun = time;
     this.char.play('Hit_Head', { fade: 0.05, loop: false, force: true });
-    setTimeout(() => { if (!this.dead && this.state === 'stunned') this.char.play('Zombie_Idle_Loop', { fade: 0.25 }); }, 380);
+    this.game.after(0.38, () => { if (!this.dead && this.state === 'stunned') this.char.play('Zombie_Idle_Loop', { fade: 0.25 }); });
   }
 
   updateSearch(dt, sees) {
@@ -317,7 +318,7 @@ export class Npc {
     if (unaware) damage *= 3; // caught off guard
     if (this.hostileKind && this.state === 'combat' && facing && !this.attack && !heavy && Math.random() < this.blockChance) {
       this.char.play('Sword_Block', { fade: 0.06, loop: false, speed: 1.5, force: true });
-      setTimeout(() => { if (!this.dead && this.state === 'combat' && !this.attack) this.char.play('Sword_Idle', { fade: 0.25 }); }, 520);
+      this.game.after(0.52, () => { if (!this.dead && this.state === 'combat' && !this.attack) this.char.play('Sword_Idle', { fade: 0.25 }); });
       this.attackCd = Math.min(this.attackCd, 0.5);
       return 'blocked';
     }
@@ -326,7 +327,7 @@ export class Npc {
     this.vel.x = dx / d * (heavy ? 5 : 3); this.vel.z = dz / d * (heavy ? 5 : 3);
     if (this.health <= 0) { this.die('slash', player); return 'killed'; }
     this.attack = null; this.mgr.releaseToken(this);
-    if (this.hostileKind) { if (this.state !== 'combat') this.enterCombat(true); this.char.play(Math.random() < 0.5 ? 'Hit_Chest' : 'Hit_Head', { fade: 0.05, loop: false, force: true }); this.attackCd = Math.max(this.attackCd, 0.7); setTimeout(() => { if (!this.dead && this.state === 'combat' && !this.attack) this.char.play('Sword_Idle', { fade: 0.2 }); }, 400); }
+    if (this.hostileKind) { if (this.state !== 'combat') this.enterCombat(true); this.char.play(Math.random() < 0.5 ? 'Hit_Chest' : 'Hit_Head', { fade: 0.05, loop: false, force: true }); this.attackCd = Math.max(this.attackCd, 0.7); this.game.after(0.4, () => { if (!this.dead && this.state === 'combat' && !this.attack) this.char.play('Sword_Idle', { fade: 0.2 }); }); }
     else this.panic(player.pos);
     return 'hit';
   }

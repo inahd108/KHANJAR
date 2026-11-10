@@ -20,8 +20,8 @@ export const QUALITY = {
 export const SUN_DIR = new THREE.Vector3(0.80, 0.50, 0.33).normalize();
 const SUN_COLOR = new THREE.Color(1.0, 0.80, 0.56);
 const FOG = {
-  color: new THREE.Color(0.56, 0.66, 0.78).multiplyScalar(0.95), // cool airy haze away from the sun
-  sunColor: new THREE.Color(1.0, 0.82, 0.60).multiplyScalar(1.0), // warm in-scatter towards the sun
+  color: new THREE.Color(0.56, 0.66, 0.78).multiplyScalar(0.56), // cool airy haze away from the sun
+  sunColor: new THREE.Color(1.0, 0.82, 0.60).multiplyScalar(0.6), // warm in-scatter towards the sun
   density: 0.0021, falloff: 0.016, baseHeight: 0.0, sunPower: 6.0,
 };
 
@@ -87,14 +87,14 @@ class GradeEffect extends Effect {
         vec3 c = inputColor.rgb;
         float l = dot(c, vec3(0.2126, 0.7152, 0.0722));
         // split toning
-        vec3 shadowTint = vec3(0.93, 0.99, 1.08);
-        vec3 highTint = vec3(1.06, 1.01, 0.93);
+        vec3 shadowTint = vec3(0.94, 0.99, 1.07);
+        vec3 highTint = vec3(1.08, 1.02, 0.91);
         c *= mix(shadowTint, highTint, smoothstep(0.05, 0.75, l));
         // contrast around mid grey
-        c = mix(vec3(0.5), c, 1.07);
+        c = mix(vec3(0.5), c, 1.1);
         // saturation
         l = dot(c, vec3(0.2126, 0.7152, 0.0722));
-        c = mix(vec3(l), c, 1.12 * (1.0 - uDesat));
+        c = mix(vec3(l), c, 1.18 * (1.0 - uDesat));
         // damage / focus pulse towards the screen edge
         float edge = smoothstep(0.35, 0.95, length(uv - 0.5) * 1.35);
         c = mix(c, c * vec3(1.0, 0.25, 0.2), edge * uPulse);
@@ -127,13 +127,13 @@ export class Gfx {
     this.csm = new CSM({
       maxFar: this.q.maxFar, cascades: this.q.cascades, mode: 'practical', parent: this.scene,
       shadowMapSize: this.q.shadowSize, lightDirection: SUN_DIR.clone().negate(), camera: this.camera,
-      lightIntensity: 7.2, lightNear: 1, lightFar: 900, lightMargin: 120, shadowBias: -0.00012,
+      lightIntensity: 4.1, lightNear: 1, lightFar: 900, lightMargin: 120, shadowBias: -0.00012,
     });
     this.csm.fade = true;
     for (const l of this.csm.lights) { l.color.copy(SUN_COLOR); l.shadow.normalBias = 0.06; }
 
     // soft fill from the sky hemisphere (image based light is added once the HDRI is loaded)
-    this.hemi = new THREE.HemisphereLight(0xb9cbe6, 0x9a7b55, 0.75);
+    this.hemi = new THREE.HemisphereLight(0xc9d6ec, 0xc09a68, 1.05);
     this.scene.add(this.hemi);
 
     this._prepared = new WeakSet();
@@ -159,6 +159,13 @@ export class Gfx {
         if (lum > best) { best = lum; bx = x; by = y; }
       }
     }
+    // The panorama's own sun would act as a second, unshadowed sun through image-based lighting and
+    // wash out every upward-facing surface, so clamp it: the directional light supplies the real sun.
+    if (isHalf) {
+      const limit = THREE.DataUtils.toHalfFloat(3.2);
+      for (let i = 0; i < data.length; i++) { const v = data[i]; if (v > limit && v < 0x7c00) data[i] = limit; }
+    } else for (let i = 0; i < data.length; i++) if (data[i] > 3.2) data[i] = 3.2;
+    hdr.needsUpdate = true;
     // equirect: u = atan2(z, x) / 2pi + 0.5 (three.js convention), v = asin(y)/pi + 0.5 (flipped rows)
     const u = (bx + 0.5) / width, v = 1 - (by + 0.5) / height;
     const flip = hdr.flipY ? 1 - v : v;
@@ -172,14 +179,14 @@ export class Gfx {
     this.scene.environment = hdr;
     // environmentRotation rotates lookups; the sign matches the manual rotation in the dome shader
     this.scene.environmentRotation.set(0, -this.skyRotation, 0);
-    this.scene.environmentIntensity = 0.5;
+    this.scene.environmentIntensity = 0.95;
     this.hdr = hdr;
     return { u, v, elev, rot: this.skyRotation };
   }
 
   _buildSky() {
     this.skyUniforms = {
-      map: { value: null }, rot: { value: 0 }, intensity: { value: 0.9 },
+      map: { value: null }, rot: { value: 0 }, intensity: { value: 0.58 },
       fogColor: { value: FOG.color }, fogDensity: { value: FOG.density },
     };
     const mat = new THREE.ShaderMaterial({
@@ -216,7 +223,7 @@ export class Gfx {
             float n2 = skyFbm(cp * vec2(1.3, 3.9) + vec2(-2.1, 7.7));
             float cl = smoothstep(0.52, 0.86, n * 0.72 + n2 * 0.34) * smoothstep(0.02, 0.22, d.y);
             float sunA = max(dot(d, ${glv3(SUN_DIR)}), 0.0);
-            vec3 cc = mix(vec3(0.95, 0.97, 1.02), vec3(1.5, 1.22, 0.9), pow(sunA, 3.0)) * 1.05;
+            vec3 cc = mix(vec3(0.95, 0.97, 1.02), vec3(1.5, 1.22, 0.9), pow(sunA, 3.0)) * 0.72;
             sky = mix(sky, cc, cl * 0.62);
           }
           vec3 fdir = normalize(vec3(d.x, max(d.y, 0.0006), d.z));
@@ -229,7 +236,7 @@ export class Gfx {
     sky.frustumCulled = false; sky.renderOrder = -1000; sky.matrixAutoUpdate = false;
     this.scene.add(sky);
     // bright sun disc used as the god-ray source (drawn into the scene so buildings occlude it)
-    const sunMat = new THREE.MeshBasicMaterial({ color: new THREE.Color(1.0, 0.86, 0.62).multiplyScalar(9), fog: false, depthWrite: false });
+    const sunMat = new THREE.MeshBasicMaterial({ color: new THREE.Color(1.0, 0.86, 0.62).multiplyScalar(7), fog: false, depthWrite: false });
     this.sunMesh = new THREE.Mesh(new THREE.SphereGeometry(42, 20, 12), sunMat);
     this.sunMesh.frustumCulled = false;
     this.scene.add(this.sunMesh);
@@ -243,14 +250,14 @@ export class Gfx {
       const ao = this.ao = new N8AOPostPass(scene, camera, innerWidth, innerHeight);
       ao.configuration.aoRadius = 1.6;
       ao.configuration.distanceFalloff = 1.0;
-      ao.configuration.intensity = 3.2;
+      ao.configuration.intensity = 2.0;
       ao.configuration.aoSamples = q.aoSamples;
       ao.configuration.denoiseSamples = 6;
       ao.configuration.denoiseRadius = 10;
       // note: N8AO's half-res path is incompatible with three r187 render targets, so AO runs at full res
       ao.configuration.halfRes = false;
       ao.configuration.gammaCorrection = false;
-      ao.configuration.color = new THREE.Color(0.06, 0.05, 0.07);
+      ao.configuration.color = new THREE.Color(0.10, 0.08, 0.09);
       composer.addPass(ao);
     }
     const effects = [];

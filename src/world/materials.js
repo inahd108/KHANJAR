@@ -86,7 +86,30 @@ export function createMaterials() {
   M.cobble = weather(set('cobblestone_floor_08', { normalScale: 1.3 }), { grime: 0, macro: 0.9 }); M.cobble.userData.uvScale = 2.6;
   M.gravel = weather(set('sandy_gravel'), { grime: 0, macro: 0.8 }); M.gravel.userData.uvScale = 4.0;
   M.tiles = weather(set('stone_tiles_02', { normalScale: 1.0 }), { grime: 0, macro: 0.8 }); M.tiles.userData.uvScale = 3.0;
-  M.terrain = weather(set('sandy_gravel'), { grime: 0, macro: 1.0 }); M.terrain.userData.uvScale = 7.0; M.terrain.name = 'terrain';
+  M.terrain = set('sandy_gravel'); M.terrain.userData.uvScale = 7.0; M.terrain.name = 'terrain';
+  // hillsides: dry earth, olive scrub and pale limestone outcrops, cut by farmed terraces
+  extendMaterial(M.terrain, 'terrain', (shader) => {
+    shader.vertexShader = shader.vertexShader
+      .replace('#include <common>', '#include <common>\nvarying vec3 vWPos;')
+      .replace('#include <fog_vertex>', '#include <fog_vertex>\n vWPos = (modelMatrix * vec4(transformed, 1.0)).xyz;');
+    shader.fragmentShader = shader.fragmentShader
+      .replace('#include <common>', `#include <common>\nvarying vec3 vWPos;\n${NOISE_GLSL}`)
+      .replace('#include <color_fragment>', `#include <color_fragment>
+        {
+          float n1 = wNoise(vWPos * 0.012 + 3.0), n2 = wNoise(vWPos * 0.05 + 11.0), n3 = wNoise(vWPos * 0.21), n4 = wNoise(vWPos * 0.9 + 7.0);
+          float scrub = smoothstep(0.42, 0.68, n1 * 0.45 + n2 * 0.35 + n3 * 0.2);
+          float tufts = smoothstep(0.55, 0.75, n3 * 0.5 + n4 * 0.5);
+          vec3 earth = mix(vec3(0.44, 0.34, 0.21), vec3(0.56, 0.47, 0.32), n2);
+          vec3 green = mix(vec3(0.15, 0.20, 0.09), vec3(0.27, 0.29, 0.14), n4);
+          vec3 col = mix(earth, green, clamp(scrub * 0.75 + tufts * 0.35, 0.0, 1.0));
+          // terraces: darker retaining walls every few metres of height on the slopes
+          float band = fract(vWPos.y / 3.2 + n2 * 0.25);
+          float wall = smoothstep(0.0, 0.06, band) * (1.0 - smoothstep(0.1, 0.16, band));
+          float slope = 1.0 - clamp(vNormal.y * 0.0 + 1.0, 0.0, 1.0);
+          col = mix(col, vec3(0.36, 0.32, 0.25), wall * 0.6 * smoothstep(1.0, 6.0, vWPos.y));
+          diffuseColor.rgb = col * (0.75 + 0.5 * dot(diffuseColor.rgb, vec3(0.333)));
+        }`);
+  });
   // --- wood, cloth, misc
   M.wood = set('weathered_planks'); M.wood.userData.uvScale = 1.6;
   M.woodDark = set('medieval_wood'); M.woodDark.userData.uvScale = 1.6;

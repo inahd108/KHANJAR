@@ -9,7 +9,7 @@ export const XS = [-150, -120, -88, -56, -24, 8, 40, 72, 104, 128, 150];
 export const ZS = [-150, -122, -90, -58, -26, 6, 36, 66, 96, 126, 150];
 export const MARKET_Z = 6;
 
-const WALL_MATS = ['stoneA', 'stoneB', 'stoneB', 'stoneC', 'stoneC', 'stoneD', 'stoneD', 'stoneE', 'stoneE', 'stoneF', 'stoneF', 'plasterA', 'plasterB', 'plasterB', 'plasterD'];
+const WALL_MATS = ['stoneA', 'stoneB', 'stoneB', 'stoneC', 'stoneC', 'stoneD', 'stoneD', 'stoneE', 'stoneE', 'stoneF', 'stoneF', 'plasterB', 'plasterB', 'plasterC', 'plasterD'];
 const STONE_TINTS = [C(1.0, 0.97, 0.90), C(0.98, 0.93, 0.84), C(1.03, 1.0, 0.95), C(0.94, 0.90, 0.83), C(1.0, 0.95, 0.86), C(0.92, 0.89, 0.85)];
 
 const inRect = (x, z, r, pad = 0) => x > r.x0 - pad && x < r.x1 + pad && z > r.z0 - pad && z < r.z1 + pad;

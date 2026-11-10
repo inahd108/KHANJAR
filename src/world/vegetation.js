@@ -14,8 +14,8 @@ function frondTexture() {
     for (const s of [-1, 1]) {
       const ang = (0.55 + 0.25 * t) + rng.range(-0.08, 0.08);
       const x1 = W / 2 + s * Math.sin(ang) * len, y1 = y - Math.cos(ang) * len * 0.9;
-      const shade = 60 + rng() * 55;
-      g.strokeStyle = `rgb(${shade * 0.62 | 0},${shade + 38 | 0},${shade * 0.36 | 0})`;
+      const shade = 70 + rng() * 60;
+      g.strokeStyle = `rgb(${shade * 0.78 | 0},${shade + 22 | 0},${shade * 0.42 | 0})`;
       g.lineWidth = 3.4 + rng() * 1.6; g.lineCap = 'round';
       g.beginPath(); g.moveTo(W / 2, y); g.quadraticCurveTo(W / 2 + s * len * 0.45, y - len * 0.12, x1, y1); g.stroke();
     }
@@ -135,7 +135,7 @@ export function buildVegetation(trees, gfx) {
   const barkTex = new THREE.TextureLoader().load('./assets/tex/palm_tree_bark_diff.webp'); barkTex.wrapS = barkTex.wrapT = THREE.RepeatWrapping; barkTex.colorSpace = THREE.SRGBColorSpace;
   const barkNor = new THREE.TextureLoader().load('./assets/tex/palm_tree_bark_nor.webp'); barkNor.wrapS = barkNor.wrapT = THREE.RepeatWrapping;
   const barkMat = new THREE.MeshStandardMaterial({ map: barkTex, normalMap: barkNor, roughness: 0.95, color: 0xb9a68c });
-  const frondMat = new THREE.MeshStandardMaterial({ map: frondTexture(), alphaTest: 0.42, side: THREE.DoubleSide, roughness: 0.62, color: 0xa7ac7c });
+  const frondMat = new THREE.MeshStandardMaterial({ map: frondTexture(), alphaTest: 0.42, side: THREE.DoubleSide, roughness: 0.7, color: 0x8c9468 });
   frondMat.onBeforeCompile = (s) => { // thin leaves: let a little light through
     s.fragmentShader = s.fragmentShader.replace('#include <emissivemap_fragment>', '#include <emissivemap_fragment>\n totalEmissiveRadiance += diffuseColor.rgb * 0.12;');
   };
