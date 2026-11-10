@@ -1,0 +1,62 @@
+{
+ "MI_Ranger": {
+  "map": "T_Ranger_BaseColor.webp",
+  "orm": "T_Ranger_ORM.webp",
+  "normal": "T_Ranger_Normal.webp",
+  "metalness": 1,
+  "roughness": 1
+ },
+ "MI_Regular_Male": {
+  "map": "T_Regular_Male_Dark_BaseColor.webp",
+  "orm": "T_Regular_Male_Roughness.webp",
+  "normal": "T_Regular_Male_Normal.webp",
+  "metalness": 0,
+  "roughness": 1
+ },
+ "MI_Regular_Female": {
+  "map": "T_Regular_Female_Dark_BaseColor.webp",
+  "orm": "T_Regular_Female_Roughness.webp",
+  "normal": "T_Regular_Female_Normal.webp",
+  "metalness": 0,
+  "roughness": 1
+ },
+ "MI_Peasant": {
+  "map": "T_Peasant_BaseColor.webp",
+  "orm": "T_Peasant_ORM.webp",
+  "normal": "T_Peasant_Normal.webp",
+  "metalness": 1,
+  "roughness": 1
+ },
+ "MI_Hair_1": {
+  "map": "T_Hair_1_BaseColor.webp",
+  "normal": "T_Hair_1_Normal.webp",
+  "metalness": 0,
+  "roughness": 1
+ },
+ "MI_Eyes": {
+  "map": "T_Eye_Brown.webp",
+  "normal": "T_Eye_Normal.webp",
+  "metalness": 0,
+  "roughness": 0.34545454382896423
+ },
+ "MI_Superhero_Male": {
+  "map": "T_Superhero_Male_Dark.webp",
+  "orm": "T_Superhero_Male_Roughness.webp",
+  "normal": "T_Superhero_Male_Normal.webp",
+  "metalness": 0,
+  "roughness": 1
+ },
+ "MI_Hair_2": {
+  "map": "T_Hair_2_BaseColor.webp",
+  "normal": "T_Hair_2_Normal.webp",
+  "metalness": 0,
+  "roughness": 0.7121212482452393
+ },
+ "MI_Superhero_Female": {
+  "map": "T_Superhero_Female_Dark_BaseColor.webp",
+  "orm": "T_Superhero_Female_Roughness.webp",
+  "normal": "T_Superhero_Female_Normal.webp",
+  "metalness": 0,
+  "roughness": 1
+ }
+}
