@@ -2,7 +2,7 @@
 import * as THREE from 'three';
 import { G, M } from './geo.js';
 import { createContext, C, CLOTH_COLORS, CREAM } from './kit.js';
-import { buildLandmarks, ZONES } from './landmarks.js';
+import { buildLandmarks, ZONES, SHRINE } from './landmarks.js';
 
 // street centre lines (metres). The outermost lines are the ring street inside the city wall.
 export const XS = [-150, -120, -88, -56, -24, 8, 40, 72, 104, 128, 150];
@@ -283,6 +283,7 @@ function facade(ctx, L, side, facesStreet) {
   if (L.h > 9 && rng.chance(0.4)) {
     for (const u of [0.5, len - 0.5]) {
       ctx.put(L.mat, G.box(), F.at(u, base + L.h * 0.33, 0.3).multiply(M(0, 0, 0, 0.9, L.h * 0.66, 0.6)), { color: L.tint, base });
+      ctx.cgeo(G.box(), F.at(u, base + L.h * 0.33 + 0.2, 0.3).multiply(M(0, 0, 0, 0.9, L.h * 0.66 + 0.4, 0.6)));
       ctx.put(L.mat, G.box(), F.at(u, base + L.h * 0.66 + 0.25, 0.22).multiply(M(0, 0, 0, 0.9, 0.7, 0.62, 0, -0.75)), { color: L.tint, base });
     }
   }
@@ -347,23 +348,26 @@ function roofDressing(ctx, L, ph) {
 function startTower(ctx, L) {
   const { kit } = ctx;
   const top = L.base + L.h;
-  // a long lookout beam reaching out over the city towards the north-east
-  const by = top - 0.3; const len = 4.2;
-  ctx.box('woodDark', L.x1 - 0.6, by - 0.11, L.z0 + 1.2 - 0.14, L.x1 + len, by + 0.11, L.z0 + 1.2 + 0.14, { color: C(0.9, 0.8, 0.66) });
-  ctx.cbox(L.x1 - 0.6, by - 0.11, L.z0 + 1.2 - 0.14, L.x1 + len, by + 0.11, L.z0 + 1.2 + 0.14);
-  // rope lashings + hanging sack
-  for (const dx of [0.6, 2.3, 3.9]) ctx.put('fabric', G.cyl(8), M(L.x1 + dx, by - 0.14, L.z0 + 1.2, 0.17, 0.28, 0.17), { color: C(0.45, 0.38, 0.27) });
-  ctx.put('fabric', G.sphere(10, 8), M(L.x1 + 3.9, by - 0.75, L.z0 + 1.2, 0.26, 0.36, 0.26), { color: C(0.5, 0.42, 0.3) });
-  ctx.put('woodDark', G.cyl(5), M(L.x1 + 3.9, by - 0.5, L.z0 + 1.2, 0.012, 0.45, 0.012));
-  ctx.spawn = { x: L.x1 + len - 0.5, y: by + 0.11, z: L.z0 + 1.2, ry: Math.PI / 2 - 0.9 };
-  ctx.perches.push({ x: L.x1 + len - 0.5, y: by + 0.11, z: L.z0 + 1.2, ry: Math.PI / 2, start: true });
+  // a long lookout beam reaching out over the city, aimed at the great dome
+  const by = top - 0.3; const len = 4.6;
+  const cx = L.x1 - 0.4, cz = L.z0 + 0.4;
+  let dx = SHRINE.x - cx, dz = SHRINE.z - cz; const dl = Math.hypot(dx, dz); dx /= dl; dz /= dl;
+  const ry = Math.atan2(dx, dz);
+  const bm = M(cx + dx * (len / 2 - 0.9), by, cz + dz * (len / 2 - 0.9), 0.3, 0.22, len + 1.8, ry);
+  ctx.put('woodDark', G.box(), bm, { color: C(0.9, 0.8, 0.66) });
+  ctx.cgeo(G.box(), bm);
+  // rope lashings
+  for (const t of [0.5, 2.2, 4.1]) ctx.put('fabric', G.cyl(8), M(cx + dx * t, by - 0.14, cz + dz * t, 0.19, 0.28, 0.19), { color: C(0.45, 0.38, 0.27) });
+  const sx = cx + dx * (len - 0.55), sz = cz + dz * (len - 0.55);
+  ctx.spawn = { x: sx, y: by + 0.11, z: sz, ry, dx, dz, tipX: cx + dx * len, tipZ: cz + dz * len };
+  ctx.perches.push({ x: sx, y: by + 0.11, z: sz, ry, start: true });
   ctx.points = ctx.points || {};
   ctx.points.safehouse = { x: L.cx, y: top, z: L.cz };
-  // small domed stair turret and a brazier on the roof
+  // small domed stair turret on the roof
   kit.dome(L.cx - 0.6, top, L.cz + 0.8, 1.5, { mat: 'plasterC', tint: C(0.97, 0.95, 0.9), drumH: 1.2, point: 0.3, drumMat: 'stoneA' });
   ctx.prop('wooden_crate_01', L.x0 + 1.1, top, L.z0 + 1.2, 0.3, 1, true);
   ctx.prop('wicker_basket_01', L.x0 + 1.2, top, L.z1 - 1.3, 1.3);
-  // ladders / handholds: banded stone courses make the tower read as climbable
+  // banded stone courses make the tower read as climbable
   for (let y = 3.2; y < L.h - 1; y += 3.2) ctx.put(L.mat, G.boxSides(), M(L.cx, L.base + y, L.cz, L.w + 0.2, 0.2, L.d + 0.2), { color: L.tint.clone().multiplyScalar(1.08), base: L.base });
 }
 

@@ -471,8 +471,16 @@ function hills(ctx) {
     h -= 9 * THREE.MathUtils.smoothstep(r, 160, 215) * (1 - THREE.MathUtils.smoothstep(r, 240, 330)); // valley below the walls
     return h - 0.35;
   };
-  ctx.heightAt = height;
   for (let i = 0; i < p.count; i++) p.setY(i, height(p.getX(i), p.getZ(i)));
+  // exact height of the tessellated terrain (so trees and houses sit on the mesh, not the analytic surface)
+  const cell = S / N, N1 = N + 1;
+  const meshHeight = (x, z) => {
+    const fx = THREE.MathUtils.clamp((x + S / 2) / cell, 0, N - 1e-4), fz = THREE.MathUtils.clamp((z + S / 2) / cell, 0, N - 1e-4);
+    const i = Math.floor(fx), j = Math.floor(fz), u = fx - i, v = fz - j;
+    const a = p.getY(i + N1 * j), b = p.getY(i + N1 * (j + 1)), c = p.getY(i + 1 + N1 * (j + 1)), d = p.getY(i + 1 + N1 * j);
+    return u + v <= 1 ? a + (d - a) * u + (b - a) * v : c + (b - c) * (1 - u) + (d - c) * (1 - v);
+  };
+  ctx.heightAt = meshHeight;
   g.computeVertexNormals();
   // ground cover: pale limestone, ochre earth and dry olive scrub blended by slope and noise
   const col = new Float32Array(p.count * 3); const nrm = g.attributes.normal;
@@ -502,7 +510,7 @@ function hills(ctx) {
     for (let i = 0; i < count; i++) {
       const a = rng() * Math.PI * 2; const d = Math.sqrt(rng()) * v.r;
       const x = v.x + Math.cos(a) * d, z = v.z + Math.sin(a) * d;
-      const y = height(x, z); const w = rng.range(5, 10), dd = rng.range(5, 10), h = rng.range(3.2, 7.5) * (1 - d / v.r * 0.3);
+      const y = meshHeight(x, z); const w = rng.range(5, 10), dd = rng.range(5, 10), h = rng.range(3.2, 7.5) * (1 - d / v.r * 0.3);
       const tint = C(0.98, 0.93, 0.84).multiplyScalar(rng.range(0.86, 1.05));
       const ry = v.rot + rng.pick([0, Math.PI / 2]) + rng.range(-0.08, 0.08);
       ctx.put(rng.pick(['stoneB', 'stoneE', 'stoneF']), G.boxSides(), M(x, y - 3, z, w, h + 3, dd, ry), { color: tint, base: y });
@@ -510,12 +518,12 @@ function hills(ctx) {
       if (rng.chance(0.16)) ctx.kit.dome(x, y + h, z, Math.min(w, dd) * 0.3, { mat: 'plasterC', tint: C(0.96, 0.94, 0.9), drumH: 0.6, collide: false, finial: false, sides: 12, drumSides: 8 });
     }
     // a tower and a ring of trees per village
-    const ty = height(v.x, v.z);
+    const ty = meshHeight(v.x, v.z);
     ctx.put('stoneB', G.boxSides(), M(v.x, ty - 2, v.z, 4.5, rng.range(14, 20), 4.5, v.rot), { color: C(0.95, 0.9, 0.8), base: ty });
     for (let i = 0; i < 26; i++) {
       const a = rng() * Math.PI * 2; const d = v.r * rng.range(0.4, 1.35);
       const x = v.x + Math.cos(a) * d, z = v.z + Math.sin(a) * d;
-      ctx.trees.push({ type: rng.chance(0.5) ? 'cypress' : 'olive', x, y: height(x, z) - 0.2, z, s: rng.range(0.9, 1.5), ry: rng() * 6.28, far: true });
+      ctx.trees.push({ type: rng.chance(0.5) ? 'cypress' : 'olive', x, y: meshHeight(x, z) - 0.2, z, s: rng.range(0.9, 1.5), ry: rng() * 6.28, far: true });
     }
   }
   // olive groves and cypresses on the hills
@@ -524,6 +532,6 @@ function hills(ctx) {
     const x = Math.cos(a) * d * 1.12, z = Math.sin(a) * d;
     if (Math.max(Math.abs(x), Math.abs(z)) < 176) continue;
     if (fbm2(x * 0.008 - 2, z * 0.008 + 11, 3) < 0.4) continue;
-    ctx.trees.push({ type: rng.chance(0.86) ? 'olive' : 'cypress', x, y: height(x, z) - 0.2, z, s: rng.range(0.8, 1.4), ry: rng() * 6.28, far: true });
+    ctx.trees.push({ type: rng.chance(0.86) ? 'olive' : 'cypress', x, y: meshHeight(x, z) - 0.2, z, s: rng.range(0.8, 1.4), ry: rng() * 6.28, far: true });
   }
 }

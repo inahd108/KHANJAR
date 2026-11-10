@@ -135,9 +135,9 @@ export function buildVegetation(trees, gfx) {
   const barkTex = new THREE.TextureLoader().load('./assets/tex/palm_tree_bark_diff.webp'); barkTex.wrapS = barkTex.wrapT = THREE.RepeatWrapping; barkTex.colorSpace = THREE.SRGBColorSpace;
   const barkNor = new THREE.TextureLoader().load('./assets/tex/palm_tree_bark_nor.webp'); barkNor.wrapS = barkNor.wrapT = THREE.RepeatWrapping;
   const barkMat = new THREE.MeshStandardMaterial({ map: barkTex, normalMap: barkNor, roughness: 0.95, color: 0xb9a68c });
-  const frondMat = new THREE.MeshStandardMaterial({ map: frondTexture(), alphaTest: 0.42, side: THREE.DoubleSide, roughness: 0.62, color: 0xc9d79a });
+  const frondMat = new THREE.MeshStandardMaterial({ map: frondTexture(), alphaTest: 0.42, side: THREE.DoubleSide, roughness: 0.62, color: 0xa7ac7c });
   frondMat.onBeforeCompile = (s) => { // thin leaves: let a little light through
-    s.fragmentShader = s.fragmentShader.replace('#include <emissivemap_fragment>', '#include <emissivemap_fragment>\n totalEmissiveRadiance += diffuseColor.rgb * 0.2;');
+    s.fragmentShader = s.fragmentShader.replace('#include <emissivemap_fragment>', '#include <emissivemap_fragment>\n totalEmissiveRadiance += diffuseColor.rgb * 0.12;');
   };
   frondMat.userData.shaderKey = 'frond'; frondMat.customProgramCacheKey = () => 'frond';
   const cypressMat = new THREE.MeshStandardMaterial({ map: foliageTexture(44, 68, 34), roughness: 1, color: 0xffffff });
